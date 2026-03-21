@@ -1,0 +1,111 @@
+Database Design
+Overview
+
+The Smart Traffic Management System database is designed to efficiently store, manage, and retrieve real-time traffic data, user information, reports, and route details.
+The database supports scalable traffic monitoring, congestion analysis, and user-generated incident reporting.
+
+A relational database model is used to ensure data consistency, integrity, and efficient querying.
+
+Database Objectives
+
+Store user authentication and profile information
+
+Maintain real-time and historical traffic data
+
+Record congestion levels and accident reports
+
+Support route optimization and ETA calculation
+
+Enable user-based traffic reporting and feedback
+
+Database Tables Description
+1. Users Table
+
+Stores information about registered users of the application.
+
+Attribute	Data Type	Description
+user_id	INT (PK)	Unique user identifier
+name	VARCHAR(100)	User full name
+email	VARCHAR(100)	User email address
+password	VARCHAR(255)	Encrypted password
+phone	VARCHAR(15)	Contact number
+role	VARCHAR(20)	User/Admin
+created_at	TIMESTAMP	Account creation time
+2. Traffic_Data Table
+
+Stores real-time and historical traffic information collected from sensors and APIs.
+
+Attribute	Data Type	Description
+traffic_id	INT (PK)	Unique traffic record
+location	VARCHAR(255)	Road or area name
+traffic_density	INT	Traffic intensity level
+average_speed	FLOAT	Average vehicle speed
+congestion_level	VARCHAR(50)	Low / Medium / High
+recorded_time	TIMESTAMP	Time of data capture
+3. Congestion_Areas Table
+
+Stores frequently congested road segments.
+
+Attribute	Data Type	Description
+area_id	INT (PK)	Unique area ID
+location	VARCHAR(255)	Congested location
+severity	VARCHAR(50)	Congestion severity
+last_updated	TIMESTAMP	Last update time
+4. Route_Information Table
+
+Stores optimized routes and travel estimates.
+
+Attribute	Data Type	Description
+route_id	INT (PK)	Route identifier
+source	VARCHAR(100)	Starting location
+destination	VARCHAR(100)	Ending location
+distance	FLOAT	Distance in kilometers
+estimated_time	FLOAT	Estimated travel time
+traffic_status	VARCHAR(50)	Current traffic status
+5. User_Reports Table
+
+Stores traffic incidents reported by users.
+
+Attribute	Data Type	Description
+report_id	INT (PK)	Report identifier
+user_id	INT (FK)	Reporting user
+report_type	VARCHAR(50)	Accident / Jam / Roadblock
+description	TEXT	Report details
+location	VARCHAR(255)	Incident location
+report_time	TIMESTAMP	Report submission time
+Relationships Between Tables
+
+Users ↔ User_Reports
+One user can submit multiple traffic reports (One-to-Many)
+
+Traffic_Data ↔ Congestion_Areas
+Traffic data contributes to congestion identification
+
+Route_Information ↔ Traffic_Data
+Routes depend on real-time traffic conditions
+
+Database Design Approach
+
+Normalized up to 3rd Normal Form (3NF)
+
+Primary keys ensure entity uniqueness
+
+Foreign keys maintain referential integrity
+
+Indexed columns used for faster queries on location and time
+
+Tools Used
+
+Database Design: MySQL / PostgreSQL
+
+ER Diagram: Draw.io / Figma
+
+Implementation: Android App Backend
+
+Future Enhancements
+
+Integration with AI/ML models for traffic prediction
+
+Real-time database synchronization using cloud services
+
+Storage of satellite and sensor-based traffic feeds
