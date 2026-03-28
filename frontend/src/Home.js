@@ -1,8 +1,23 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import "./Home.css";
 
 function Home() {
   const navigate = useNavigate();
+
+  // 🔥 state to store backend message
+  const [message, setMessage] = useState("");
+
+  // 🔥 call backend when page loads
+  useEffect(() => {
+    fetch("http://localhost:5000/")
+      .then((res) => res.text())
+      .then((data) => {
+        console.log(data);
+        setMessage(data);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   return (
     <div className="home-container">
@@ -11,6 +26,9 @@ function Home() {
       <div className="home-header">
         <h1>🚦 Smart Traffic System</h1>
         <p>Real-time monitoring & analysis</p>
+
+        {/* 🔥 Backend Message Display */}
+        <h3 style={{ color: "green" }}>{message}</h3>
       </div>
 
       {/* Cards Section */}

@@ -1,129 +1,115 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   GoogleMap,
   LoadScript,
-  DirectionsService,
   DirectionsRenderer,
+  Marker
 } from "@react-google-maps/api";
 
 function RoutePlanner() {
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
   const [directions, setDirections] = useState(null);
-  const [request, setRequest] = useState(null);
+  const [info, setInfo] = useState(null);
+  const [accidents, setAccidents] = useState([]);
 
-  const handleSearch = () => {
-    if (!source || !destination) {
-      alert("Enter source and destination");
-      return;
-    }
+  // 🚨 Fetch accident data
+  useEffect(() => {
+    fetch("http://localhost:5000/api/accidents")
+      .then(res => res.json())
+      .then(data => setAccidents(data))
+      .catch(err => console.log(err));
+  }, []);
 
-    setRequest({
-      origin: source,
-      destination: destination,
-      travelMode: "DRIVING",
-      provideRouteAlternatives: true, // 🔥 MULTIPLE ROUTES
-      drivingOptions: {
-        departureTime: new Date(),
-        trafficModel: "bestguess",
+  const calculateRoute = () => {
+    if (!source || !destination) return;
+
+    const directionsService = new window.google.maps.DirectionsService();
+
+    directionsService.route(
+      {
+        origin: source,
+        destination: destination,
+        travelMode: window.google.maps.TravelMode.DRIVING,
+        drivingOptions: {
+          departureTime: new Date(),
+          trafficModel: "bestguess"
+        }
       },
-    });
+      (result, status) => {
+        if (status === "OK") {
+          setDirections(result);
+
+          const route = result.routes[0].legs[0];
+
+          setInfo({
+            distance: route.distance.text,
+            duration: route.duration.text,
+            trafficTime: route.duration_in_traffic
+              ? route.duration_in_traffic.text
+              : route.duration.text
+          });
+        }
+      }
+    );
   };
 
   return (
-    <LoadScript googleMapsApiKey="AIzaSyCLcewodT9bO052AmdQCkamsw9qkohS-wU">
-      <div style={{ padding: "20px" }}>
-        <h2>📍 Route Comparison</h2>
+    <div style={{ padding: "20px" }}>
+      <h1>📍 Route Comparison</h1>
 
-        {/* Inputs */}
-        <input
-          type="text"
-          placeholder="Enter Source"
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-        />
+      {/* Inputs */}
+      <input
+        placeholder="Enter Source"
+        value={source}
+        onChange={(e) => setSource(e.target.value)}
+      />
 
-        <input
-          type="text"
-          placeholder="Enter Destination"
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-        />
+      <input
+        placeholder="Enter Destination"
+        value={destination}
+        onChange={(e) => setDestination(e.target.value)}
+      />
 
-        <button onClick={handleSearch}>Compare Routes</button>
+      <button onClick={calculateRoute}>Compare Routes</button>
 
-        {/* Map */}
-        <div style={{ height: "500px", marginTop: "20px" }}>
-          <GoogleMap
-            mapContainerStyle={{ height: "100%", width: "100%" }}
-            center={{ lat: 17.385, lng: 78.4867 }}
-            zoom={12}
-          >
-
-            {request && (
-              <DirectionsService
-                options={request}
-                callback={(result) => {
-                  if (result && result.status === "OK") {
-                    setDirections(result);
-                  }
-                }}
-              />
-            )}
-
-            {directions &&
-              directions.routes.map((route, index) => (
-                <DirectionsRenderer
-                  key={index}
-                  directions={directions}
-                  routeIndex={index}
-                  options={{
-                    polylineOptions: {
-                      strokeOpacity: index === 0 ? 1 : 0.5,
-                      strokeWeight: index === 0 ? 6 : 4,
-                    },
-                  }}
-                />
-              ))}
-
-          </GoogleMap>
+      {/* Info Section */}
+      {info && (
+        <div style={{ marginTop: "15px" }}>
+          <p>📏 Distance: {info.distance}</p>
+          <p>⏱ Normal Time: {info.duration}</p>
+          <p>🚦 With Traffic: {info.trafficTime}</p>
         </div>
+      )}
 
-        {/* Route Comparison */}
-        {directions && (
-          <div style={{ marginTop: "20px" }}>
-            <h3>🚗 Route Comparison</h3>
+      {/* Map */}
+      <LoadScript googleMapsApiKey="AIzaSyDrYfOSdTDuuG3oFyXmQEMWprmezFWx7Z4">
+        <GoogleMap
+          mapContainerStyle={{ width: "100%", height: "500px" }}
+          center={{ lat: 16.3067, lng: 80.4365 }} // Guntur default
+          zoom={12}
+        >
+          {/* Route */}
+          {directions && <DirectionsRenderer directions={directions} />}
 
-            {directions.routes.map((route, index) => {
-              const leg = route.legs[0];
-
-              return (
-                <div
-                  key={index}
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "10px",
-                    margin: "10px 0",
-                    background: index === 0 ? "#e6ffe6" : "#fff",
-                  }}
-                >
-                  <h4>
-                    Route {index + 1} {index === 0 && "⭐ Best Route"}
-                  </h4>
-
-                  <p>Distance: {leg.distance.text}</p>
-                  <p>Duration: {leg.duration.text}</p>
-                  <p>
-                    Traffic Time:{" "}
-                    {leg.duration_in_traffic?.text || "N/A"}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </LoadScript>
+          {/* 🚨 Accident Markers with COLORS */}
+          {accidents.map((acc, index) => (
+            <Marker
+              key={index}
+              position={{ lat: acc.lat, lng: acc.lng }}
+              title={`${acc.location} - ${acc.severity}`}
+              icon={
+                acc.severity === "High"
+                  ? "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                  : acc.severity === "Medium"
+                  ? "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
+                  : "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+              }
+            />
+          ))}
+        </GoogleMap>
+      </LoadScript>
+    </div>
   );
 }
 

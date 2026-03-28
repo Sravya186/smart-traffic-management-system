@@ -36,3 +36,45 @@
     transform: rotate(360deg);
   }
 }
+/* 🔍 Search bar */
+.search-bar {
+  padding: 12px;
+  width: 300px;
+  border-radius: 8px;
+  border: none;
+  margin: 20px;
+}
+
+/* 🚨 Report button */
+.report-btn {
+  padding: 10px 20px;
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 🚨 Form */
+.report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px auto;
+  width: 300px;
+}
+
+.report-form input,
+.report-form select {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+}
+
+.report-form button {
+  background: #28a745;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+}

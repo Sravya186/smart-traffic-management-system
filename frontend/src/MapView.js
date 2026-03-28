@@ -10,7 +10,9 @@ function MapView() {
   const [position, setPosition] = useState({
     lat: 17.385,
     lng: 78.4867,
-  }); // default
+  });
+
+  const [accidents, setAccidents] = useState([]);
 
   // 📍 Get user's real location
   useEffect(() => {
@@ -27,6 +29,14 @@ function MapView() {
     );
   }, []);
 
+  // 🚨 Fetch accident data
+  useEffect(() => {
+    fetch("http://localhost:5000/api/accidents")
+      .then((res) => res.json())
+      .then((data) => setAccidents(data))
+      .catch((err) => console.log(err));
+  }, []);
+
   return (
     <LoadScript googleMapsApiKey="AIzaSyCLcewodT9bO052AmdQCkamsw9qkohS-wU">
       <GoogleMap
@@ -34,11 +44,25 @@ function MapView() {
         center={position}
         zoom={15}
       >
-        {/* 📍 Your Location Marker */}
-        <Marker position={position} />
+        {/* 📍 Your Location */}
+        <Marker position={position} label="You" />
 
         {/* 🚦 Traffic Layer */}
         <TrafficLayer />
+
+        {/* 🚨 Accident Markers */}
+        {accidents.map((item, index) => (
+          <Marker
+            key={index}
+            position={{
+              lat: item.lat,
+              lng: item.lng,
+            }}
+            icon={{
+              url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+            }}
+          />
+        ))}
       </GoogleMap>
     </LoadScript>
   );
